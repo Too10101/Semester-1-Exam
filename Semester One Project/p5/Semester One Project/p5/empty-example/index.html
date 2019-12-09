@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>+++++</title>
+    <style>
+        body {
+            text-align: center;
+        } 
+      
+    </style>
+    <script src="p5.js"></script>
+    <script src="p5.sound.js"></script>
+    <script src="sketch.js"></script>
+  </head>
+  <body>
+<script type="text/javascript">
+var player
+var ground
+    
+function setup() {
+    createCanvas(700,700)
+    player = new Player()
+    ground = new Ground()
+    
+    angleMode(DEGREES)
+    rectMode(CENTER)
+}
+    
+function draw() {
+    background(135,206,235)
+
+    player.draw()
+    player.update()
+    ground.draw()
+    
+    player.rotate1()
+
+    
+    collision(player,5)
+}
+    
+function collision(p,n) {
+    if (p.y + p.height + n >= ground.y) {
+        p.y = ground.y - p.height - n
+        p.vel = 0
+        p.r = 0
+        p.j = 2
+    }
+}
+    
+function angleOfLanding() {
+    
+}
+    
+var angle = 0
+class Player {
+    constructor() {
+        this.x = width/2
+        this.y = 40
+        this.dx = 0
+        this.dy = 0
+        this.width = 40
+        this.height = 40
+        this.lift = -9
+        this.grav = .1
+        this.vel = 0
+        this.vel2 = 0
+        this.active = true
+        this.rotate = 0
+        this.r = 0
+        this.j = 2
+    }
+    draw() {
+        push()
+        translate(this.x, this.y)
+        rotate(this.rotate)
+        
+        fill(200)
+        rect(0, 0, this.width, this.height)
+        pop()
+    }
+    update() {
+        this.vel2 += this.dx
+        this.vel2 *= .85
+        this.x += this.vel2
+        
+        this.y += this.dy
+        
+        this.vel += this.grav
+        this.vel *= .99
+        this.y += this.vel
+    }
+    jump() {
+        this.vel += this.lift
+    }
+    rotate1(){
+        this.rotate += this.r
+    }
+}
+    
+class Ground {
+    constructor() {
+        this.x = 350
+        this.y = 675
+        this.width = 700
+        this.height = 50
+    }
+    draw() {
+        fill("green")
+        rect(this.x, this.y, this.width, this.height)
+    }
+}
+    
+function keyPressed() {
+    if (keyCode === 68) {
+        player.dx = 2
+    }
+    if (keyCode === 65) {
+        player.dx = -2
+    }
+    if (keyCode === 83) {
+        player.dy = 2
+    }
+    if (keyCode === 87) {
+        if (player.j > 0) {
+            player.j--
+            player.jump()
+        }
+    }
+    
+    if (keyCode === LEFT_ARROW) {
+        player.r = -3
+    }
+    if (keyCode === RIGHT_ARROW) {
+        player.r = 3
+    }
+}
+    
+function keyReleased() {
+    if (keyCode === 68 || keyCode === 65) {
+        player.dx = 0
+    }
+    if (keyCode === 83) {
+        player.dy = 0
+    }
+    
+    if (keyCode === LEFT_ARROW) {
+        player.r = 0
+    }
+    if (keyCode === RIGHT_ARROW) {
+        player.r = 0
+    }
+}
+</script>
+  </body>
+</html>
