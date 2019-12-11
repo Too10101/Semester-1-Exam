@@ -18,85 +18,124 @@
 <script type="text/javascript">
 var player
 var ground
-var hitbox
+var drops
+var effects = {
+    rain: []
+}
+
+var song
+
+//levels
+var level1Button
+var level2Button
+var level3Button
+
+var level1
     
 function setup() {
     createCanvas(700,700)
     player = new Player()
     ground = new Ground()
-    hitbox = new HitBox()
     
-    angleMode(DEGREES)   
+    level1Button = new levelSelector(150,100,"Level 1")
+    level2Button = new levelSelector(350,100,"Level 2")
+    level3Button = new levelSelector(550,100,"Level 3")
+    
+    level1 = new LevelOne(350, 350)
+    
+    song = loadSound('slime.mp3')
+    
+    angleMode(DEGREES)
+    rectMode(CENTER)
 }
     
 function draw() {
-    background(135,206,235)
+    background(180,206,235)
+    
+    for(let i = 0; i < 1; i++) {
+        drops = new Rain(Math.random() * 700, Math.random() * -100)
+        effects.rain.push(drops)
+    }
+    effects.rain
+        .filter(drop => drop.active)
+        .forEach(drop => {
+            drop.update()
+            drop.draw()
+        })
     
     player.draw()
     player.update()
-    hitbox.draw()
-    hitbox.update()
-    ground.draw()
+    player.rotate1()
     
-    collision(player,300)
-    collision(hitbox,37)
+    ground.draw()
+
+    //levelButton
+    level1Button.draw()
+    level2Button.draw()
+    level3Button.draw()
+    
+    levelBoxCollision(level1Button)
+    levelBoxCollision(level2Button)
+    levelBoxCollision(level3Button)
+    
+    if(level === 1) {
+        level1.draw()
+        
+        level1Button.active = false
+        level2Button.active = false
+        level3Button.active = false
+        
+        level1Button.y = 25
+        level2Button.y = 25
+        level3Button.y = 25
+        
+        level1Button.size = 50
+        level2Button.size = 50
+        level3Button.size = 50
+        
+        level1Button.textSize = 12
+        level2Button.textSize = 12
+        level3Button.textSize = 12
+    }
+    
+    collision(player,5)
 }
     
 function collision(p,n) {
     if (p.y + p.height + n >= ground.y) {
         p.y = ground.y - p.height - n
         p.vel = 0
-    }
-}
-    
-class HitBox {
-    constructor() {
-        this.x = 0
-        this.y = 0
-        this.dx = 0
-        this.dy = 0
-        this.width = 40
-        this.height = 3
-        this.lift = -9
-        this.grav = .1
-        this.vel = 0
-        this.vel2 = 0
-        this.active = true
-        this.rotate = 0
-    }
-    draw() {
-        push()
-        if (keyCode === LEFT_ARROW) {
-            this.rotate += 1
+        p.r = 0
+        if (p.j < 2) {
+            song.play()
         }
-        translate(this.x, this.y)
-        rotate(this.rotate)
-        
-        fill(255,0,0)
-        rect(this.x, this.y, this.width, this.height)
-        pop()
+        p.j = 2
     }
-    update() {
-        this.vel2 += this.dx
-        this.vel2 *= .85
-        this.x += this.vel2
-        
-        this.y += this.dy
-        
-        this.vel += this.grav
-        this.vel *= .99
-        this.y += this.vel
-    }
-    jump() {
-        this.vel += this.lift
+}
+
+function levelBoxCollision(levelBox) {
+    if (levelBox.x + levelBox.size/2 > mouseX && levelBox.y + levelBox.size/2 > mouseY) {
+        if (levelBox.x - levelBox.size/2 < mouseX && levelBox.y - levelBox.size/2 < mouseY) {
+            levelBox.color = "#a49bd3"
+            levelBox.overBox = true
+        } else {
+            levelBox.color = "white"
+            levelBox.overBox = false
+        }
+    } else {
+        levelBox.color = "white"
+        levelBox.overBox = false
     }
 }
     
-var angle = 0
+function angleOfLanding() {
+    
+}
+    
 class Player {
     constructor() {
-        this.x = 0
-        this.y = 0
+        this.x = width/2
+        this.y = 599
         this.dx = 0
         this.dy = 0
         this.width = 40
@@ -107,17 +146,16 @@ class Player {
         this.vel2 = 0
         this.active = true
         this.rotate = 0
+        this.r = 0
+        this.j = 1
     }
     draw() {
         push()
-        if (keyCode === LEFT_ARROW) {
-            this.rotate += 1
-        }
         translate(this.x, this.y)
         rotate(this.rotate)
         
-        fill(200)
-        rect(this.x, this.y, this.width, this.height)
+        fill(101, 255, 0)
+        rect(0, 0, this.width, this.height)
         pop()
     }
     update() {
@@ -134,12 +172,76 @@ class Player {
     jump() {
         this.vel += this.lift
     }
+    rotate1(){
+        this.rotate += this.r
+    }
+}
+    
+class Rain {
+    constructor(x,y) {
+        this.x = x
+        this.y = y
+        this.dx = 0
+        this.dy = 0
+        this.width = .1
+        this.height = 2
+        this.grav = .15
+        this.vel = 0
+        this.active = true
+    }
+    draw() { 
+        fill(101, 255, 0)
+        rect(this.x, this.y, this.width, this.height)
+    }
+    update() {
+        this.vel += this.grav
+        this.vel *= .99
+        this.y += this.vel
+        
+        if (this.y > 700) {
+            this.active = false
+        }
+    }
+}
+    
+class levelSelector {
+    constructor(x,y,level) {
+        this.x = x
+        this.y = y
+        this.size = 100
+        this.levelNumber = level
+        this.textSize = 25
+        this.color = "white"
+        this.overBox = false
+        this.active = true
+    }
+    draw() {
+        fill(this.color)
+        rect(this.x, this.y, this.size, this.size)
+        fill("black")
+        textSize(this.textSize)
+        text(this.levelNumber, this.x - this.size/2.5, this.y)
+    }
+}
+    
+class LevelOne {
+    constructor(x,y) {
+        this.x = x
+        this.y = y
+        this.width = 250
+        this.height = 50
+        this.active = true
+    }
+    draw() {
+        fill("green")
+        rect(this.x, this.y, this.width, this.height)
+    }
 }
     
 class Ground {
     constructor() {
-        this.x = 0
-        this.y = 650
+        this.x = 350
+        this.y = 675
         this.width = 700
         this.height = 50
     }
@@ -152,30 +254,50 @@ class Ground {
 function keyPressed() {
     if (keyCode === 68) {
         player.dx = 2
-        hitbox.dx = 2
     }
     if (keyCode === 65) {
         player.dx = -2
-        hitbox.dx = -2
     }
     if (keyCode === 83) {
         player.dy = 2
-        hitbox.dy = 2
     }
     if (keyCode === 87) {
-        player.jump()
-        hitbox.jump()
+        if (player.j > 0) {
+            player.j--
+            player.jump()
+        }
+    }
+    
+    if (keyCode === LEFT_ARROW) {
+        player.r = -3
+    }
+    if (keyCode === RIGHT_ARROW) {
+        player.r = 3
     }
 }
     
 function keyReleased() {
     if (keyCode === 68 || keyCode === 65) {
         player.dx = 0
-        hitbox.dx = 0
     }
     if (keyCode === 83) {
         player.dy = 0
-        hitbox.dy = 0
+    }
+    
+    if (keyCode === LEFT_ARROW) {
+        player.r = 0
+    }
+    if (keyCode === RIGHT_ARROW) {
+        player.r = 0
+    }
+}
+
+let level = 0
+function mousePressed() {
+    if(level1Button.overBox) {
+        level = 1
+        player.y = 50
+        player.x = width/2
     }
 }
 </script>
