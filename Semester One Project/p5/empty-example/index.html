@@ -79,6 +79,12 @@ function draw() {
     player.update()
     player.rotate1()
     
+    if(player.rotate >= 90 || player.rotate <= -90) {
+       player.rotate = 0
+    }
+    
+    text(player.rotate, 50,50)
+    
     ground.draw()
 
     //levelButton
@@ -150,6 +156,17 @@ function collision(p,n) {
             song.play()
         }
         p.j = 2
+        if (level === 1 || level === 2) {
+            if (p.rotate === 0 || p.rotate === 90 || p.rotate === -90) {
+                fill("#000080")
+                textSize(50)
+                text("Level Passed", 205,300)
+            } else {
+                fill("red")
+                textSize(50)
+                text("Level Failed", 205,300)
+            }
+        }
     }
     if (p.x - 21 < 0) {
         p.x = 21
@@ -368,14 +385,14 @@ function mousePressed() {
         player.y = 50
         player.x = width/2
         player.vel = 0
-        player.rotate = 40
+        player.rotate = 81
     }
     if(level2Button.overBox) {
         level = 2
         player.y = 50
         player.x = 100
         player.vel = 0
-        player.rotate = 55
+        player.rotate = 30
     }
 }
 </script>
