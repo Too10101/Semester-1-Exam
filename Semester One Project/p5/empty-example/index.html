@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>+++++</title>
+    <title>Cube Game</title>
     <style>
         body {
             text-align: center;
@@ -24,6 +24,7 @@ var effects = {
 }
 
 var song
+var song2
 
 //levels
 var level1Button
@@ -31,6 +32,8 @@ var level2Button
 var level3Button
 
 var level1
+var level2
+var level2p
     
 function setup() {
     createCanvas(700,700)
@@ -42,15 +45,24 @@ function setup() {
     level3Button = new levelSelector(550,100,"Level 3")
     
     level1 = new LevelOne(350, 350)
+    level2 = new LevelTwo(100, 200)
+    level2p = new LevelTwo(500, 450)
     
     song = loadSound('slime.mp3')
+    song2 = loadSound('rain.mp3')
     
     angleMode(DEGREES)
     rectMode(CENTER)
 }
-    
+
+let t = 0
 function draw() {
     background(180,206,235)
+    t++
+    
+    if(t % 10 === 0) {
+       song2.play()
+       }
     
     for(let i = 0; i < 1; i++) {
         drops = new Rain(Math.random() * 700, Math.random() * -100)
@@ -81,9 +93,7 @@ function draw() {
     if(level === 1) {
         level1.draw()
         
-        level1Button.active = false
-        level2Button.active = false
-        level3Button.active = false
+        obstacleCollision(player,level1)
         
         level1Button.y = 25
         level2Button.y = 25
@@ -96,6 +106,36 @@ function draw() {
         level1Button.textSize = 12
         level2Button.textSize = 12
         level3Button.textSize = 12
+    } else if(level === 2) {
+        level2.draw()
+        level2p.draw()
+        
+        obstacleCollision(player,level2)
+        obstacleCollision(player,level2p)
+        
+        level1Button.y = 25
+        level2Button.y = 25
+        level3Button.y = 25
+        
+        level1Button.size = 50
+        level2Button.size = 50
+        level3Button.size = 50
+        
+        level1Button.textSize = 12
+        level2Button.textSize = 12
+        level3Button.textSize = 12
+    } else {
+        level1Button.y = 100
+        level2Button.y = 100
+        level3Button.y = 100
+        
+        level1Button.size = 100
+        level2Button.size = 100
+        level3Button.size = 100
+        
+        level1Button.textSize = 25
+        level2Button.textSize = 25
+        level3Button.textSize = 25
     }
     
     collision(player,5)
@@ -110,6 +150,12 @@ function collision(p,n) {
             song.play()
         }
         p.j = 2
+    }
+    if (p.x - 21 < 0) {
+        p.x = 21
+    }
+    if (p.x + p.width/2 > width) {
+        p.x = 680
     }
 }
 
@@ -128,8 +174,12 @@ function levelBoxCollision(levelBox) {
     }
 }
     
-function angleOfLanding() {
-    
+function obstacleCollision(p,e) {
+    if (p.x + p.width/2 > e.x - e.width/2 && p.y + p.height/2 > e.y - e.height/2) {
+        if (p.x - p.width/2 < e.x + e.width/2 && p.y - p.height/2 < e.y + e.height/2) {
+            level = 0
+        }
+    }
 }
     
 class Player {
@@ -238,6 +288,25 @@ class LevelOne {
     }
 }
     
+class LevelTwo {
+    constructor(x,y,x2,y2) {
+        this.x = x
+        this.y = y
+        this.x2 = x2
+        this.y2 = y2
+        this.width = 250
+        this.height = 50
+        this.width2 = 250
+        this.height2 = 50
+        this.active = true
+    }
+    draw() {
+        fill("green")
+        rect(this.x, this.y, this.width, this.height)
+        rect(this.x2, this.y2, this.width2, this.height2)
+    }
+}
+    
 class Ground {
     constructor() {
         this.x = 350
@@ -298,6 +367,15 @@ function mousePressed() {
         level = 1
         player.y = 50
         player.x = width/2
+        player.vel = 0
+        player.rotate = 40
+    }
+    if(level2Button.overBox) {
+        level = 2
+        player.y = 50
+        player.x = 100
+        player.vel = 0
+        player.rotate = 55
     }
 }
 </script>
